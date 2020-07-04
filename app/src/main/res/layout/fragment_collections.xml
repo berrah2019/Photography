@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <RelativeLayout android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ProgressBar android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_centerInParent="true"
+        style="?android:attr/progressBarStyle"
+        android:id="@+id/fragment_collections_processbar"/>
+
+    <GridView android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/fragment_collections_gridview"
+        android:horizontalSpacing="2dp"
+        android:verticalSpacing="2dp"
+        android:numColumns="2"/>
+
+</RelativeLayout>

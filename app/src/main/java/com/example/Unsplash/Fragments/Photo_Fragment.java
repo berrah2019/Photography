@@ -1,0 +1,106 @@
+package com.example.Unsplash.Fragments;
+
+import android.os.Bundle;
+
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
+
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.Unsplash.R;
+import com.example.Unsplash.WebServices.ApiInterfaces.ApiInterface;
+import com.example.Unsplash.WebServices.ServiceGenerator;
+import com.example.Unsplash.adapters.PhotosAdatper;
+import com.example.Unsplash.models.Photo;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class Photo_Fragment extends Fragment {
+    private final static String TAG = Photo_Fragment.class.getSimpleName();
+    @BindView(R.id.fragment_photos_recyclerview)
+    RecyclerView photosRecyclerView;
+    @BindView(R.id.fragment_photos_progressbar)
+    ProgressBar progressBar;
+
+    private PhotosAdatper photosAdatper;
+    private List<Photo> photos = new ArrayList<>();
+
+    private Unbinder unbinder;
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_photos, container, false);
+        unbinder = ButterKnife.bind(this, view);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        photosRecyclerView.setLayoutManager(linearLayoutManager);
+
+        photosAdatper = new PhotosAdatper(getActivity(), photos);
+        photosRecyclerView.setAdapter(photosAdatper);
+        showProgressBar(true);
+        getPhotos();
+        return view;
+    }
+
+    private void getPhotos(){
+        ApiInterface apiInterface = ServiceGenerator.createService(ApiInterface.class);
+        Call<List<Photo>> call = apiInterface.getPhotos();
+        call.enqueue(new Callback<List<Photo>>() {
+            @Override
+            public void onResponse(Call<List<Photo>> call, Response<List<Photo>> response) {
+                if(response.isSuccessful()){
+                    Log.d(TAG, "Loading successfully, size: " + response.body().size());
+                    for(Photo photo: response.body()){
+                        photos.add(photo);
+                        Log.d(TAG, photo.getUrl().getFull());
+                    }
+                    photosAdatper.notifyDataSetChanged();
+
+                }else{
+                    Log.d(TAG, "Fail" + response.message());
+                }
+                showProgressBar(false);
+            }
+
+            @Override
+            public void onFailure(Call<List<Photo>> call, Throwable t) {
+                Log.d(TAG, "Fail: " + t.getMessage());
+                showProgressBar(false);
+            }
+        });
+    }
+
+
+
+    private void showProgressBar(boolean isShow){
+        if(isShow){
+            progressBar.setVisibility(View.VISIBLE);
+            photosRecyclerView.setVisibility(View.GONE);
+        }else{
+            progressBar.setVisibility(View.GONE);
+            photosRecyclerView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+}
+
